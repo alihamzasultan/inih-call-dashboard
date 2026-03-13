@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MoreVertical, ExternalLink, Phone, Mail, MapPin, Calendar, AlertTriangle, Shield, DollarSign } from "lucide-react";
+import { Search, MoreVertical, ExternalLink, Phone, Mail, MapPin, Calendar, AlertTriangle, Shield, DollarSign, FileText } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -236,7 +236,8 @@ export function LeadsTable({ leads }: LeadsTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead className="whitespace-nowrap">Contact / Info</TableHead>
-              <TableHead className="whitespace-nowrap">Incident Date</TableHead>
+              <TableHead className="whitespace-nowrap">Transcript</TableHead>
+              <TableHead className="whitespace-nowrap">Recording</TableHead>
               <TableHead className="whitespace-nowrap">Score</TableHead>
               <TableHead className="whitespace-nowrap text-right">Price</TableHead>
               <TableHead className="whitespace-nowrap">Status</TableHead>
@@ -247,7 +248,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
           <TableBody>
             {paginatedLeads.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Search className="h-8 w-8 opacity-40" />
                     <p className="text-base font-medium">No calls found</p>
@@ -277,8 +278,41 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm">
-                    {formatDate(lead.incident_date)}
+                  <TableCell className="whitespace-nowrap">
+                    {lead.call_transcript ? (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 gap-1.5"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDetails(lead);
+                        }}
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        View
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic">No transcript</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {lead.call_audio_url ? (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 gap-1.5"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDetails(lead);
+                        }}
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                        Listen
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic">No audio</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant={getScoreVariant(lead.lead_score)} className="whitespace-nowrap">
@@ -361,18 +395,54 @@ export function LeadsTable({ leads }: LeadsTableProps) {
               <div>
                 <span className="block">{selectedLead?.contact_name || "Unknown Lead"}</span>
                 <span className="text-sm font-normal text-muted-foreground">
-                  {formatIncidentType(selectedLead?.incident_type ?? null)} · {selectedLead?.incident_state || "N/A"}
+                  Call Record · {selectedLead?.contact_phone || "N/A"}
                 </span>
               </div>
             </DialogTitle>
             <DialogDescription>
-              Lead ID: {selectedLead?.id?.slice(0, 8)}... · Created {formatDateTime(selectedLead?.created_at ?? null)}
+              Call ID: {selectedLead?.id?.slice(0, 8)}... · Created {formatDateTime(selectedLead?.created_at ?? null)}
             </DialogDescription>
           </DialogHeader>
 
           {selectedLead && (
             <ScrollArea className="max-h-[calc(85vh-120px)] px-6 pb-6">
               <div className="space-y-6">
+                {/* Call Recording & Transcript Section */}
+                {(selectedLead.call_audio_url || selectedLead.call_transcript) && (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-blue-500" />
+                      Call Recording & Transcript
+                    </h3>
+                    
+                    {selectedLead.call_audio_url && (
+                      <div className="p-4 bg-muted/50 rounded-lg border border-border/50">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Recording</p>
+                        <audio 
+                          src={selectedLead.call_audio_url} 
+                          controls 
+                          className="w-full h-10"
+                        >
+                          Your browser does not support the audio element.
+                        </audio>
+                      </div>
+                    )}
+
+                    {selectedLead.call_transcript && (
+                      <div className="p-4 bg-muted/50 rounded-lg border border-border/50">
+                        <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                          <FileText className="h-3 w-3" />
+                          Transcript
+                        </p>
+                        <div className="text-sm leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                          {selectedLead.call_transcript}
+                        </div>
+                      </div>
+                    )}
+                    <Separator />
+                  </div>
+                )}
+
                 {/* Quick Stats Row */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="rounded-lg border bg-muted/30 p-3 text-center">
