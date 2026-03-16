@@ -75,7 +75,7 @@ const Index = () => {
                 <Phone className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold">INIH SOLUTIONS LLC' Calls analytics</h1>
+                <h1 className="text-xl sm:text-2xl font-bold">INIH SOLUTIONS LLC Calls Analytics</h1>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   Real-time call lead management
                 </p>
